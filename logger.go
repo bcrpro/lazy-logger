@@ -14,6 +14,7 @@ import (
 type Logger struct {
 	lokiURL string
 	jobName string
+	local bool
 }
 
 var (
@@ -22,11 +23,12 @@ var (
 )
 
 // Init initializes the global logger instance
-func Init(lokiURL, jobName string) {
+func Init(lokiURL, jobName string, local bool) {
 	once.Do(func() {
 		instance = &Logger{
 			lokiURL: lokiURL,
 			jobName: jobName,
+			local: local,
 		}
 	})
 }
@@ -41,6 +43,10 @@ func GetLogger() *Logger {
 
 // pushToLoki sends a log entry to the Loki server
 func (l *Logger) pushToLoki(level, message string) {
+	if l.local {
+		log.Printf("[%s] %s", level, message)
+		return
+	}
 	payload := map[string]interface{}{
 		"streams": []map[string]interface{}{
 			{
