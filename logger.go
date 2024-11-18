@@ -45,7 +45,6 @@ func GetLogger() *Logger {
 func (l *Logger) pushToLoki(level, message string) {
 	if l.local {
 		log.Printf("[%s] %s", level, message)
-		return
 	}
 	payload := map[string]interface{}{
 		"streams": []map[string]interface{}{
