@@ -3,6 +3,7 @@ package lazylogger
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"sync"
@@ -49,7 +50,7 @@ func (l *Logger) pushToLoki(level, message string) {
 				},
 				"values": [][]string{
 					{
-						time.Now().Format("20060102150405") + "000000000",
+						fmt.Sprintf("%d", time.Now().UnixNano()),
 						message,
 					},
 				},
