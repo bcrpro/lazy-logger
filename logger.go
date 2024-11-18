@@ -1,4 +1,4 @@
-package logger
+package lazylogger
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// Logger is the core struct for LazyLogger
 type Logger struct {
 	lokiURL string
 	jobName string
@@ -19,7 +20,7 @@ var (
 	once     sync.Once
 )
 
-// Initialize the global logger instance
+// Init initializes the global logger instance
 func Init(lokiURL, jobName string) {
 	once.Do(func() {
 		instance = &Logger{
@@ -29,15 +30,15 @@ func Init(lokiURL, jobName string) {
 	})
 }
 
-// Get the global logger instance
+// GetLogger returns the singleton instance of Logger
 func GetLogger() *Logger {
 	if instance == nil {
-		log.Fatal("Logger not initialized. Call logger.Init() first.")
+		log.Fatal("LazyLogger not initialized. Call lazylogger.Init() first.")
 	}
 	return instance
 }
 
-// pushToLoki sends a log message to Loki
+// pushToLoki sends a log entry to the Loki server
 func (l *Logger) pushToLoki(level, message string) {
 	payload := map[string]interface{}{
 		"streams": []map[string]interface{}{
@@ -48,7 +49,6 @@ func (l *Logger) pushToLoki(level, message string) {
 				},
 				"values": [][]string{
 					{
-						// Timestamp in nanoseconds
 						time.Now().Format("20060102150405") + "000000000",
 						message,
 					},
@@ -75,15 +75,17 @@ func (l *Logger) pushToLoki(level, message string) {
 	}
 }
 
-// Public log methods
+// Info logs an informational message
 func (l *Logger) Info(message string) {
 	l.pushToLoki("info", message)
 }
 
+// Warn logs a warning message
 func (l *Logger) Warn(message string) {
 	l.pushToLoki("warn", message)
 }
 
+// Error logs an error message
 func (l *Logger) Error(message string) {
 	l.pushToLoki("error", message)
 }
