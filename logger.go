@@ -11,10 +11,11 @@ import (
 )
 
 // Logger is the core struct for LazyLogger
+// storage: 0: local, 1: loki, 2: both
 type Logger struct {
 	lokiURL string
 	jobName string
-	local bool
+	storage int
 }
 
 var (
@@ -23,12 +24,12 @@ var (
 )
 
 // Init initializes the global logger instance
-func Init(lokiURL, jobName string, local bool) {
+func Init(lokiURL, jobName string,  storage int) {
 	once.Do(func() {
 		instance = &Logger{
 			lokiURL: lokiURL,
 			jobName: jobName,
-			local: local,
+			storage: storage,
 		}
 	})
 }
@@ -43,7 +44,11 @@ func GetLogger() *Logger {
 
 // pushToLoki sends a log entry to the Loki server
 func (l *Logger) pushToLoki(level, message string) {
-	if l.local {
+	if l.storage == 0 {
+		log.Printf("[%s] %s", level, message)
+		return
+	}
+	if l.storage == 2 {
 		log.Printf("[%s] %s", level, message)
 	}
 	payload := map[string]interface{}{
